@@ -71,6 +71,7 @@ class Layer : public SurfaceFlingerConsumer::ContentsChangedListener {
     static int32_t sSequence;
 
 public:
+    friend class ExLayer;
     mutable bool contentDirty;
     // regions below are in window-manager space
     Region visibleRegion;
@@ -204,7 +205,7 @@ public:
 
     void setGeometry(const sp<const DisplayDevice>& hw,
             HWComposer::HWCLayerInterface& layer);
-    void setPerFrameData(const sp<const DisplayDevice>& hw,
+    virtual void setPerFrameData(const sp<const DisplayDevice>& hw,
             HWComposer::HWCLayerInterface& layer);
     void setAcquireFence(const sp<const DisplayDevice>& hw,
             HWComposer::HWCLayerInterface& layer);
@@ -283,7 +284,22 @@ public:
 
     // Updates the transform hint in our SurfaceFlingerConsumer to match
     // the current orientation of the display device.
-    void updateTransformHint(const sp<const DisplayDevice>& hw) const;
+    void updateTransformHint(const sp<const DisplayDevice>& hw) ;
+
+    /* ------------------------------------------------------------------------
+     * Extensions
+     */
+    virtual bool isExtOnly() const { return false; }
+    virtual bool isIntOnly() const { return false; }
+    virtual bool isSecureDisplay() const { return false; }
+    virtual bool isYuvLayer() const { return false; }
+    virtual void setPosition(const sp<const DisplayDevice>& /*hw*/,
+                             HWComposer::HWCLayerInterface& /*layer*/,
+                             const State& /*state*/) { }
+    virtual void setAcquiredFenceIfBlit(int& /*fenceFd */,
+                       HWComposer::HWCLayerInterface& /*layer */) { }
+    virtual bool canAllowGPUForProtected() const { return false; }
+
 
     /*
      * returns the rectangle that crops the content of the layer and scales it
@@ -336,6 +352,7 @@ protected:
         LayerCleaner(const sp<SurfaceFlinger>& flinger, const sp<Layer>& layer);
     };
 
+    Rect reduce(const Rect& win, const Region& exclude) const;
 
 private:
     // Interface implementation for SurfaceFlingerConsumer::ContentsChangedListener
@@ -419,6 +436,7 @@ private:
     Vector<BufferItem> mQueueItems;
     uint64_t mLastFrameNumberReceived;
     bool mUpdateTexImageFailed; // This is only modified from the main thread
+    uint32_t mTransformHint;
 };
 
 // ---------------------------------------------------------------------------

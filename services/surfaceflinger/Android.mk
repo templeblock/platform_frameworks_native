@@ -34,10 +34,19 @@ LOCAL_SRC_FILES := \
     RenderEngine/Texture.cpp \
     RenderEngine/GLES10RenderEngine.cpp \
     RenderEngine/GLES11RenderEngine.cpp \
-    RenderEngine/GLES20RenderEngine.cpp
-
+    RenderEngine/GLES20RenderEngine.cpp \
+    DisplayUtils.cpp \
+    ExSurfaceFlinger/ExLayer.cpp \
+    ExSurfaceFlinger/ExSurfaceFlinger.cpp \
+    ExSurfaceFlinger/ExVirtualDisplaySurface.cpp \
+    ExSurfaceFlinger/ExHWComposer.cpp
 
 LOCAL_CFLAGS := -DLOG_TAG=\"SurfaceFlinger\"
+
+ifeq ($(TARGET_BUILD_VARIANT),userdebug)
+LOCAL_CFLAGS += -DDEBUG_CONT_DUMPSYS
+endif
+
 LOCAL_CFLAGS += -DGL_GLEXT_PROTOTYPES -DEGL_EGLEXT_PROTOTYPES
 
 ifeq ($(TARGET_BOARD_PLATFORM),omap4)
@@ -105,6 +114,13 @@ LOCAL_SHARED_LIBRARIES := \
     libui \
     libgui \
     libpowermanager
+
+ifeq ($(TARGET_USES_QCOM_BSP), true)
+    LOCAL_C_INCLUDES += hardware/qcom/display/libgralloc
+    LOCAL_C_INCLUDES += hardware/qcom/display/libqdutils
+    LOCAL_SHARED_LIBRARIES += libqdutils
+    LOCAL_CFLAGS += -DQTI_BSP
+endif
 
 LOCAL_MODULE := libsurfaceflinger
 
